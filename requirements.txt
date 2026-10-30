@@ -1,0 +1,7 @@
+# 분석 다시 만들기 (python analysis/build_site.py)
+pandas>=2.0
+numpy>=1.24
+shapely>=2.0
+matplotlib>=3.7
+# 노트북 실행
+ipykernel

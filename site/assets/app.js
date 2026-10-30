@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const REPO_URL = 'https://github.com/ok4506-bot/lifestage-capital-toronto';  // 저장소 이름을 바꾸면 여기도 바꾸기
+  const REPO_URL = 'https://github.com/ok4506-bot/pop_density';  // 저장소 이름을 바꾸면 여기도 바꾸기
 
   // ---------------------------------------------------------------- helpers
   const $ = (s, el = document) => el.querySelector(s);
