@@ -1,0 +1,60 @@
+region,cat,name,query,lat,lon,stage_hint
+capital,univ,서울대,서울대학교 관악캠퍼스,37.4600,126.9520,s1
+capital,univ,연세대,연세대학교 신촌캠퍼스,37.5658,126.9386,s1
+capital,univ,고려대,고려대학교 서울캠퍼스,37.5894,127.0323,s1
+capital,univ,서강대,서강대학교,37.5509,126.9410,s1
+capital,univ,이화여대,이화여자대학교,37.5618,126.9468,s1
+capital,univ,홍익대,홍익대학교 서울캠퍼스,37.5509,126.9250,s1
+capital,univ,한양대,한양대학교 서울캠퍼스,37.5572,127.0459,s1
+capital,univ,성균관대(인문),성균관대학교 인문사회과학캠퍼스,37.5880,126.9930,s1
+capital,univ,건국대,건국대학교 서울캠퍼스,37.5420,127.0796,s1
+capital,univ,경희대,경희대학교 서울캠퍼스,37.5966,127.0525,s1
+capital,univ,중앙대,중앙대학교 서울캠퍼스,37.5051,126.9571,s1
+capital,univ,동국대,동국대학교 서울캠퍼스,37.5582,126.9988,s1
+capital,univ,한국외대,한국외국어대학교 서울캠퍼스,37.5974,127.0589,s1
+capital,univ,서울시립대,서울시립대학교,37.5838,127.0587,s1
+capital,univ,숭실대,숭실대학교,37.4963,126.9573,s1
+capital,univ,세종대,세종대학교,37.5503,127.0731,s1
+capital,univ,국민대,국민대학교,37.6106,126.9970,s1
+capital,univ,서울과기대,서울과학기술대학교,37.6317,127.0775,s1
+capital,univ,광운대,광운대학교,37.6195,127.0597,s1
+capital,univ,성균관대(자연),성균관대학교 자연과학캠퍼스,37.2936,126.9745,s1
+capital,univ,아주대,아주대학교,37.2829,127.0447,s1
+capital,univ,경희대(국제),경희대학교 국제캠퍼스,37.2397,127.0833,s1
+capital,univ,단국대(죽전),단국대학교 죽전캠퍼스,37.3220,127.1265,s1
+capital,univ,한양대 ERICA,한양대학교 ERICA캠퍼스,37.2974,126.8352,s1
+capital,univ,인하대,인하대학교,37.4505,126.6535,s1
+capital,univ,가천대,가천대학교 글로벌캠퍼스,37.4508,127.1288,s1
+capital,univ,인천대(송도),인천대학교 송도캠퍼스,37.3754,126.6328,s1
+capital,job,광화문·시청,광화문역,37.5704,126.9780,s2
+capital,job,강남·테헤란로,역삼역,37.5007,127.0365,s2
+capital,job,여의도,여의도역,37.5216,126.9243,s2
+capital,job,판교테크노밸리,판교테크노밸리,37.4019,127.1089,s2
+capital,job,마곡,마곡나루역,37.5669,126.8272,s2
+capital,job,G밸리(구로·가산),가산디지털단지역,37.4812,126.8826,s2
+capital,job,성수,성수역,37.5445,127.0557,s2
+capital,job,상암 DMC,디지털미디어시티역,37.5771,126.8999,s2
+capital,edu,대치동 학원가,대치동 학원가,37.4993,127.0598,s3
+capital,edu,목동 학원가,목동 학원가,37.5269,126.8748,s3
+capital,edu,중계동 은행사거리,중계동 은행사거리,37.6436,127.0735,s3
+capital,newtown,동탄,동탄역,37.1996,127.0965,s3
+capital,newtown,광교,광교중앙역,37.2886,127.0517,s3
+capital,newtown,위례,위례중앙광장,37.4783,127.1421,s3
+capital,newtown,김포한강,장기역,37.6434,126.6698,s3
+capital,newtown,파주운정,운정역,37.7154,126.7614,s3
+capital,newtown,양주옥정,옥정동,37.8205,127.0935,s3
+capital,newtown,인천검단,검단신도시,37.5960,126.6760,s3
+capital,newtown,평택고덕,고덕국제신도시,37.0450,127.0510,s3
+capital,newtown,다산,다산동,37.6140,127.1570,s3
+capital,newtown,미사,미사역,37.5630,127.1930,s3
+capital,newtown,삼송·지축,삼송역,37.6531,126.8958,s3
+capital,newtown,송도,송도국제도시,37.3915,126.6418,s3
+toronto,univ,U of T (St. George),,43.6629,-79.3957,s1
+toronto,univ,Toronto Metropolitan U,,43.6577,-79.3788,s1
+toronto,univ,York U,,43.7735,-79.5019,s1
+toronto,univ,U of T Scarborough,,43.7845,-79.1870,s1
+toronto,univ,U of T Mississauga,,43.5483,-79.6627,s1
+toronto,job,Financial District (King & Bay),,43.6487,-79.3817,s2
+toronto,job,North York Centre,,43.7680,-79.4128,s2
+toronto,job,Vaughan Metropolitan Centre,,43.7942,-79.5273,s2
+toronto,job,Mississauga City Centre,,43.5930,-79.6425,s2

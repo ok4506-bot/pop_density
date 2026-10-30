@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나이대별로 사는 곳과 들어오는 곳 — 수도권과 토론토</title>
+<meta name="description" content="SGIS 1km 인구격자와 MDIS 주민등록 인구이동 OD로 본 생애단계별 거주 집중과 서울의 연령별 유입·유출. 토론토 인구조사와 대조.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8'%3E%3Crect width='3' height='8' fill='%23c2417a'/%3E%3Crect x='3' width='4' height='8' fill='%23eb6834'/%3E%3Crect x='7' width='4' height='8' fill='%231baf7a'/%3E%3Crect x='11' width='5' height='8' fill='%232a78d6'/%3E%3Crect x='16' width='4' height='8' fill='%239a6614'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="assets/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="frame">
+    <p class="course">스마트시티융합기술세미나 과제3 — 도시 현상을 지표로 측정하고 공간적으로 해석하기</p>
+    <h1>서울은 스물두 살을 받아들이고<br>서른네 살을 내보낸다</h1>
+    <p class="lede">2024년 주민등록 전입신고로 서울 경계를 넘나든 사람을 한 살 단위로 셌다.
+      들어온 사람이 더 많은 나이는 <b data-k="pos_range">18~27세</b>뿐이다.
+      <b data-k="peak_age">22</b>세에서 <b data-k="peak">6,868</b>명이 늘었고,
+      <b data-k="min_age">34</b>세에서 <b data-k="min">3,351</b>명이 줄었다. 2023년과 2025년에도 모양이 같다.</p>
+  </div>
+  <figure class="frame wide hero-fig">
+    <div class="fig-head">
+      <div>
+        <h3 class="fig-title">서울의 나이별 순이동 (서울 밖 ↔ 서울)</h3>
+        <p class="fig-sub">막대 = 상대 지역별 순이동, 선 = 합계. 위 띠는 생애단계.</p>
+      </div>
+      <div class="seg" id="yearSeg" role="group" aria-label="연도">
+        <button type="button" data-v="2023">2023</button><button type="button" data-v="2024" aria-pressed="true">2024</button><button type="button" data-v="2025">2025</button>
+      </div>
+    </div>
+    <div id="ageChart" class="chart chart-hero" role="img" aria-label="서울 나이별 순이동 막대그래프"></div>
+  </figure>
+  <div class="frame wide takeaways">
+    <p><span class="sw" style="--c:var(--s1)"></span><b>20–24세</b> <span data-k="s1_net">+26,324</span>명. 서울 밖에서 들어온 이 나이대의 <span data-k="s1_rest_share">57.8</span>%가 비수도권 출신이다.</p>
+    <p><span class="sw" style="--c:var(--s2)"></span><b>25–34세</b> <span data-k="s2_net">−3,397</span>명. 비수도권에서 <span data-k="s2_rest">+12,462</span>명, 경기로 <span data-k="s2_gg">−13,839</span>명이 맞선다.</p>
+    <p><span class="sw" style="--c:var(--s3)"></span><b>35–44세</b> <span data-k="s3_net">−20,130</span>명. 줄어든 사람의 <span data-k="s3_gg_share">75</span>%가 경기로 갔다.</p>
+  </div>
+</header>
+
+<nav class="ribbon-bar" id="ribbonBar" aria-label="생애단계 선택">
+  <div class="frame wide ribbon-inner">
+    <span class="ribbon-label">생애단계</span>
+    <div class="ribbon" id="ribbon" role="radiogroup"></div>
+  </div>
+</nav>
+
+<main>
+
+<section id="question" class="frame">
+  <h2>무엇을 보는가</h2>
+  <p>이 과제가 보는 현상은 하나다. <b>나이대마다 사는 곳과 들어오는 곳이 다르다.</b>
+    수도권 인구를 생애단계 다섯으로 나누고, 누가 어디에 사는지(거주)와 누가 어디로 들어오고 나가는지(이동)를 같은 눈금으로 읽는다.</p>
+  <ol class="rq">
+    <li><b>사는 곳.</b> 생애단계 다섯은 각각 수도권 어디에 모여 사는가? 토론토도 도심에서 멀어질수록 같은 순서로 바뀌는가?</li>
+    <li><b>들어오고 나가는 곳.</b> 서울로는 어떤 나이대가 어디서 들어오고, 서울을 떠나는 사람은 어느 나이대가 어디로 가는가?</li>
+    <li><b>둘의 관계.</b> 사는 곳과 이사 오는 곳은 같은가? 들어온 곳에 남는가?</li>
+  </ol>
+
+  <h3>왜 토론토와 비교하나</h3>
+  <ul class="why-list">
+    <li><b>기준이 있다.</b> 토론토는 25~34세의 도심 집중을 다룬 선행연구(Moos 2016)가 있는 도시다. 같은 지표를 대 보면 수도권의 모습이 대도시 일반의 모습인지, 수도권만의 모습인지 가를 수 있다.</li>
+    <li><b>같은 식으로 계산된다.</b> 인구조사구(CT) 중위 면적이 1.13㎢로 1km 격자와 비슷하고, 성×5세 연령 자료가 있어 거주 LQ를 똑같이 낼 수 있다.</li>
+    <li><b>집을 짓는 방식이 다르다.</b> 수도권은 신도시 아파트 단지를, 토론토는 도심 콘도와 교외 단독주택을 공급해 왔다. 나이대별 거주 위치의 차이가 주택 공급 구조와 이어지는지 보는 것이 서울·토론토 주택 공급 비교 연구로 이어지는 고리다.</li>
+  </ul>
+  <p class="note">토론토는 이동(전입신고) 자료가 없어 거주 쪽(①)만 비교한다.</p>
+
+  <div class="table-wrap">
+  <table class="data">
+    <caption>쓴 자료</caption>
+    <thead><tr><th>층</th><th>자료</th><th>단위·시점</th><th>규모</th></tr></thead>
+    <tbody>
+      <tr><td>거주</td><td>통계청 SGIS 인구격자 (성×5세 연령)</td><td>1km 격자, 2024 (2000~2020 5년 간격으로 시계열)</td><td>수도권 <span data-k="grid_n">10,179</span>격자 (250명 이상 <span data-k="grid_ok">3,669</span>)</td></tr>
+      <tr><td>거주 (대조)</td><td>Statistics Canada 인구조사</td><td>인구조사구(CT), 2021</td><td>토론토 CMA <span data-k="tor_n">1,227</span> CT</td></tr>
+      <tr><td>이동</td><td>MDIS 국내인구이동 마이크로데이터 (주민등록 전입신고)</td><td>행정동→행정동, 2024 (2023·2025 비교)</td><td>이동자 8,084,589명 중 시군구 경계를 넘은 4,277,584명</td></tr>
+      <tr><td>경계</td><td>행정동 경계 2025-01-01 (vuski/admdongkor)</td><td>행정동 → 시군구</td><td>MDIS 2024 코드와 서울 426개 동 모두 일치</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">MDIS 원자료에는 같은 읍면동 안 이사가 들어 있다. 이를 빼면 전국 이동자 수가 KOSIS 공표값(2024년 6,283,319명)과 정확히 같고, 서울 전입 1,221,380명·전출 1,266,072명도 일치한다.</p>
+
+  <h3>생애단계 다섯</h3>
+  <div class="table-wrap">
+  <table class="data stages-table" id="stageTable">
+    <thead><tr><th>단계</th><th>나이</th><th>고른 이유</th><th class="num">수도권 비율</th><th class="num">토론토 비율</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+</section>
+
+<section id="indicators" class="frame">
+  <h2>지표 세 개</h2>
+  <p>세 지표는 같은 질문을 서로 다른 자료로 묻는다. ①과 ②는 식이 같아서 "사는 사람의 나이 구성"과 "이사 오는 사람의 나이 구성"을 같은 눈금(1 = 수도권 평균)으로 맞댈 수 있다.</p>
+  <dl class="ind">
+    <div class="ind-row">
+      <dt><span class="ind-no">①</span>거주 LQ<span class="tag">수업 지표 · LQ</span></dt>
+      <dd>
+        <div class="formula">\[ LQ^{res}_{s,i} = \frac{P_{s,i}/P_i}{P_s/P} \]</div>
+        <p>격자 \(i\)에서 생애단계 \(s\) 인구의 비율을 수도권 전체 비율로 나눈 값. 1.2 이상이면 그 나이대가 <b>모여 사는 곳</b>.
+          20~34세는 대학 기숙사·군부대·산업단지 숙소의 초과 인원을 빼고 계산했다. 인구 250명 미만 격자는 비운다.</p>
+        <p class="why"><b>쓰는 이유</b> 나이대마다 인구 규모가 달라 사람 수로는 비교가 안 된다. 지역 평균에 대한 비율로 바꾸면 다섯 단계를 같은 눈금(1)으로 보고, 토론토에도 같은 식을 쓸 수 있다.</p>
+      </dd>
+    </div>
+    <div class="ind-row">
+      <dt><span class="ind-no">②</span>유입 LQ<span class="tag own">직접 설계</span></dt>
+      <dd>
+        <div class="formula">\[ LQ^{in}_{s,j} = \frac{I_{s,j}/I_j}{I_s/I},\qquad I_{s,j}=\sum_{k\neq j}F_{s,kj} \]</div>
+        <p>지역 \(j\)로 이사 온 사람 중 \(s\)단계 비율을 수도권 전체 전입의 비율로 나눈 값. 1보다 크면 그 나이대가 <b>들어오는 곳</b>.
+          규모가 분자·분모에서 지워져 큰 구가 저절로 위로 오지 않는다. 시군구(같은 시군구 안 이사 제외)와 서울 행정동(같은 동 안 이사 제외)에서 계산했다.</p>
+        <p class="why"><b>쓰는 이유</b> 전입자 수는 큰 구일수록 많아 어떤 나이대가 오는 곳인지를 가린다. 전입자의 나이 구성으로 보면 규모와 상관없이 성격이 드러나고, ①과 식이 같아 사는 사람과 오는 사람을 바로 맞댈 수 있다.</p>
+      </dd>
+    </div>
+    <div class="ind-row">
+      <dt><span class="ind-no">③</span>순유입 강도<span class="tag">수업 지표 · 네트워크 가중 연결강도</span></dt>
+      <dd>
+        <div class="formula">\[ NM_{s,j} = \frac{\sum_k F_{s,kj} - \sum_k F_{s,jk}}{P_{s,j}}\times 1{,}000 \]</div>
+        <p>생애단계별 이사 네트워크(노드 = 시군구, 가중치 = 이동자 수)에서 들어온 강도(in-strength)와 나간 강도(out-strength)의 차이를 그 나이대 인구로 나눈 값.
+          인구 천 명당 1년 순유입. 양수면 그 나이대가 <b>남는 곳</b>, 음수면 빠지는 곳.</p>
+        <p class="why"><b>쓰는 이유</b> 많이 들어와도 더 많이 나가면 남지 않는다. 들어온 것과 나간 것을 함께 봐야 쌓이는 곳과 거쳐 가는 곳이 갈리고, 인구로 나눠 크기가 다른 지역을 견줄 수 있다.</p>
+      </dd>
+    </div>
+  </dl>
+</section>
+
+<section id="live" class="frame wide">
+  <div class="sec-head">
+    <h2><span class="sec-no">①</span>사는 곳</h2>
+    <p>지표 ① 거주 LQ. 위 띠에서 생애단계를, 지도 위에서 연도를 바꾸면 지도와 그래프가 함께 바뀐다. 기호는 핵심 시설이다.</p>
+  </div>
+  <figure class="mapfig">
+    <div class="controls">
+      <div class="seg" id="regionSeg" role="group" aria-label="지역"><button type="button" data-v="capital" aria-pressed="true">수도권</button><button type="button" data-v="toronto">토론토</button></div>
+      <div class="years" id="yearsA"><div class="seg" id="yearASeg" role="group" aria-label="연도"></div><button type="button" class="play" id="playA" aria-pressed="false">▶ 재생</button></div>
+      <div class="seg" id="viewASeg" role="group" aria-label="보기"><button type="button" data-v="lq" aria-pressed="true">선택한 단계의 LQ</button><button type="button" data-v="dom">우세 생애단계</button></div>
+      <div class="chips fac-chips" data-map="A" role="group" aria-label="핵심 시설"></div>
+    </div>
+    <div class="map" id="mapA" aria-label="거주 LQ 지도"></div>
+    <figcaption>
+      <div class="legend" id="legendA"></div>
+      <p class="cap-note" id="capA"></p>
+    </figcaption>
+  </figure>
+
+  <div class="two-col">
+    <div class="prose">
+      <h3>2000 → 2024, 띠가 움직였다</h3>
+      <ul class="ts-list">
+        <li><b>25~34세</b>의 도심 집중은 짙어졌다. 서울시청 5km 안 LQ가 2000년 <span data-k="ts_s2_a">1.10</span>에서 2024년 <span data-k="ts_s2_b">1.27</span>로 올랐다.</li>
+        <li><b>35~44세</b>가 가장 많이 사는 띠는 바깥으로 밀려났다. 2000년에는 <span data-k="ts_s3_a">20–30km</span>(분당·일산 같은 1기 신도시 거리)였고, 2024년에는 <span data-k="ts_s3_b">40–60km</span>(동탄·평택 쪽)다.</li>
+        <li><b>65세 이상</b>은 2000년에 도심(<span data-k="ts_s5_a0">1.25</span>)과 40km 밖 농산촌(<span data-k="ts_s5_afar">1.83</span>)에 몰려 있었지만, 2024년에는 도심 바로 바깥 <span data-k="ts_s5_b">10–15km</span>의 오래된 주거지에서 가장 높다.</li>
+      </ul>
+      <h3>도심에서 멀어질수록 (2024)</h3>
+      <p>수도권에서 25~34세는 서울시청 10km 안에서 LQ <span data-k="b_s2_0">1.27</span>로 가장 높고, 35~44세는 30~60km 신도시 띠에서 <span data-k="b_s3_far">1.08</span>로 가장 높다.
+        65세 이상은 도심 바로 바깥 5~15km의 오래된 주거지에서 높다.</p>
+      <p>토론토는 더 가파르다. 25~34세가 도심 5km 안에서 <span data-k="t_s2_0">1.86</span>이고, 35~44세도 도심에서 <span data-k="t_s3_0">1.20</span>으로 높다. 토론토에서는 30대 후반까지 도심에 남는 사람이 많다.</p>
+      <h3>시설 1.5km 안과 밖</h3>
+      <div class="table-wrap"><table class="data compact" id="facTable">
+        <thead><tr><th>시설</th><th>단계</th><th class="num">거주 LQ 안 / 밖</th><th class="num">서울 동 유입 LQ 안 / 밖</th></tr></thead><tbody></tbody>
+      </table></div>
+      <p class="note">학원가 근처에 35~44세가 더 많이 사는 것은 아니다(거주 LQ 안 0.89 / 밖 0.90). 그런데 이사 들어오는 사람 중에는 35~44세가 뚜렷이 많다(유입 LQ 1.27 / 0.97). 사는 사람과 들어오는 사람은 다른 것을 보여 준다.</p>
+    </div>
+    <figure class="plain">
+      <h3 class="fig-title">거리대별 거주 LQ</h3>
+      <p class="fig-sub">거리대 안 인구를 모두 합쳐 계산. 점선 = 1(평균). 수도권은 지도에서 고른 연도.</p>
+      <div id="bandChart" class="chart chart-band" role="img" aria-label="도심 거리대별 생애단계 거주 LQ"></div>
+    </figure>
+  </div>
+</section>
+
+<section id="move" class="frame wide">
+  <div class="sec-head">
+    <h2><span class="sec-no">②</span>들어오고 나가는 곳</h2>
+    <p>지표 ② 유입 LQ와 ③ 순유입 강도. 구를 누르면 오른쪽에 출발지·도착지 구성이 나온다.</p>
+  </div>
+  <figure class="mapfig with-side">
+    <div class="controls">
+      <div class="seg" id="dirSeg" role="group" aria-label="방향"><button type="button" data-v="in" aria-pressed="true">서울로 들어오기</button><button type="button" data-v="out">서울에서 나가기</button></div>
+      <div class="seg" id="viewBSeg" role="group" aria-label="보기"><button type="button" data-v="flow" aria-pressed="true">시군구 순유입 + 흐름</button><button type="button" data-v="dong">서울 행정동 유입 LQ</button></div>
+      <label class="range">흐름 <input type="range" id="nFlows" min="10" max="80" step="5" value="30"><output id="nFlowsOut">30</output>개</label>
+      <div class="chips fac-chips" data-map="B" role="group" aria-label="핵심 시설"></div>
+    </div>
+    <div class="map-row">
+      <div class="map" id="mapB" aria-label="이동 지도"></div>
+      <aside class="side" id="side" aria-live="polite"></aside>
+    </div>
+    <figcaption>
+      <div class="legend" id="legendB"></div>
+      <p class="cap-note" id="capB"></p>
+    </figcaption>
+  </figure>
+
+  <div class="two-col">
+    <div class="prose">
+      <h3>나이마다 다른 관문</h3>
+      <p><b>20~24세</b>는 대학가로 들어온다. 서울 행정동 중 이 나이대 유입 LQ가 가장 높은 곳은 <span data-k="top_s1">사근동·이문1동·화양동·신촌동·안암동</span>이다.
+        관악구는 이 나이대가 인구 천 명당 <span data-k="gwanak_s1">167</span>명 늘어 수도권 1위지만, 25~34세는 <span data-k="gwanak_s2">−27</span>, 35~44세는 <span data-k="gwanak_s3">−58</span>로 빠진다. 거쳐 가는 진입지다.</p>
+      <p><b>25~34세</b>는 업무지구 가까이로 들어온다: <span data-k="top_s2">가산동·신림동·영등포동·가양1동·양평1동</span>.</p>
+      <p><b>35~44세</b>는 서울을 떠날 때 경계 바로 바깥 신도시로 간다: <span data-k="s3_dest">남양주시·고양시 덕양구·하남시·파주시·김포시</span>.
+        서울 안에서 이 나이대가 들어오는 동은 <span data-k="top_s3">잠실2동·목5동·일원본동·목1동·잠실4동</span>으로 학원가와 겹친다.</p>
+      <p class="note">강동구와 강남구는 서울에서 드물게 25~44세가 순유입이다. 재건축 대단지 입주가 이어진 곳이라, 주택 공급과의 관계를 따로 확인할 만하다.</p>
+    </div>
+    <figure class="plain">
+      <h3 class="fig-title">서울 25개 구 순유입 강도 (인구 천 명당)</h3>
+      <p class="fig-sub">시군구 경계를 넘는 이사 기준, 2024. 30 이상 칸만 숫자 표시.</p>
+      <div id="heatChart" class="chart chart-heat" role="img" aria-label="서울 구별 생애단계 순유입 강도 히트맵"></div>
+    </figure>
+  </div>
+
+  <details class="tableview">
+    <summary>표로 보기: 서울 경계를 넘는 이동 (2024)</summary>
+    <div class="table-wrap"><table class="data compact" id="balTable">
+      <thead><tr><th>단계</th><th class="num">전입</th><th class="num">전출</th><th class="num">순이동</th><th class="num">천 명당</th><th class="num">↔ 경기</th><th class="num">↔ 인천</th><th class="num">↔ 비수도권</th></tr></thead><tbody></tbody>
+    </table></div>
+  </details>
+</section>
+
+<section id="link" class="frame wide">
+  <div class="sec-head">
+    <h2><span class="sec-no">③</span>사는 곳과 들어오는 곳</h2>
+    <p>①과 ②를 시군구 단위로 맞댄 그림. 점 색은 ③의 부호(남는 곳 / 빠지는 곳), 크기는 그 나이대 인구.</p>
+  </div>
+  <div class="two-col rev">
+    <figure class="plain">
+      <div id="scatterChart" class="chart chart-scatter" role="img" aria-label="거주 LQ와 유입 LQ 산점도"></div>
+    </figure>
+    <div class="prose" id="scatterText">
+      <h3>네 칸으로 읽기</h3>
+      <p><b>오른쪽 위</b>는 그 나이대가 많이 살고 많이 들어오는 곳이다. 점이 파란색이면 들어오는 만큼 더 많이 나가는 <b>회전형</b>이다(25~34세의 관악구).</p>
+      <p><b>왼쪽 위</b>는 아직 많이 살지는 않지만 들어오는 사람이 몰리는 곳으로, 새로 만들어지는 집중지 후보다.</p>
+      <p><b>오른쪽 아래</b>는 많이 살지만 새로 들어오는 사람은 적은 곳이다. 이미 자리 잡은 정착지이거나 고령화되는 곳이다.</p>
+      <p class="note" id="scatterNote"></p>
+    </div>
+  </div>
+</section>
+
+<section id="read" class="frame">
+  <h2>무엇을 읽었나</h2>
+  <ol class="findings">
+    <li><b>서울은 나이의 관문이다.</b> 순유입이 흑자인 나이는 <span data-k="pos_range">18~27세</span>뿐이고 정점은 <span data-k="peak_age">22</span>세다. 그 뒤로는 나가는 쪽이 많아 <span data-k="min_age">34</span>세에서 가장 크게 줄어든다. 2023·2025년도 정점(22세)과 바닥(33~34세)이 같다.</li>
+    <li><b>들어오는 곳은 기능으로 갈린다.</b> 20~24세는 대학가, 25~34세는 업무지구 근처, 35~44세는 학원가로 들어온다. 시설 1.5km 안의 서울 행정동은 해당 나이대 유입 LQ가 밖보다 1.2~1.7배 높다.</li>
+    <li><b>나가는 곳은 서울 경계 바로 바깥이다.</b> 35~44세 순유출의 75%가 경기로 가고, 상위 목적지는 남양주·고양 덕양·하남·파주·김포 같은 신도시다. 거주 LQ로 봐도 이 나이대는 30~60km 띠에서 가장 높고, 그 띠는 2000년 20~30km에서 바깥으로 밀려났다.</li>
+    <li><b>토론토와는 기울기가 다르다.</b> 토론토 청년은 도심에 훨씬 가파르게 모이고(5km 안 LQ 1.86, 수도권 1.27), 35~44세도 도심에 남는다(1.20, 수도권 1.01).</li>
+  </ol>
+
+  <h3>다음 연구 질문</h3>
+  <ul class="next">
+    <li>35~44세가 나가는 시군구와 그해 신규 아파트 입주 물량은 맞물리는가? (입주 물량 자료와 연결)</li>
+    <li>관악구 같은 회전형 진입지에 사람들은 얼마나 머무는가? 같은 사람을 추적할 수 없으므로 전입사유(직업·주택)와 코호트로 보강한다.</li>
+    <li>토론토에서 30대 후반이 도심에 남는 것은 콘도 공급 때문인가? 주택 유형 변수로 두 도시를 다시 비교한다.</li>
+  </ul>
+</section>
+
+<section id="source" class="frame">
+  <h2>자료와 재현</h2>
+  <ul class="sources">
+    <li>통계청 SGIS 인구격자 1km (2000·2005·2010·2015·2020·2024), 성·5세 연령별 인구</li>
+    <li>국가데이터처(통계청) MDIS 「국내인구이동통계」 마이크로데이터 2023~2025. 이 페이지의 분석 결과는 작성자의 것이며 국가데이터처의 공식 입장이 아니다.</li>
+    <li>KOSIS 「시군구/성/연령(5세)별 이동자수」 (검산용)</li>
+    <li>행정동 경계 vuski/admdongkor (2025-01-01)</li>
+    <li>Statistics Canada, Census of Population 2021 (UNI·CEN Standardized Census Data), CT 경계 2021</li>
+    <li>배경지도 Esri World Light Gray Canvas (대체: © OpenStreetMap contributors). 시군구·행정동 경계와 지명은 위 행정동 경계에서 직접 그렸다.</li>
+  </ul>
+  <p>분석 코드: <code>analysis/build_site.py</code>가 모든 지표를 계산해 <code>site/data/*.json</code>을 만든다. 공개 자료는 격자·시군구·행정동 단위 집계값이며, 이동자 5명 미만 칸은 내보내지 않았다.
+    <a id="repoLink" href="#">GitHub 저장소</a></p>
+</section>
+
+</main>
+
+<footer class="frame foot">
+  <p>2026년 11월 · 생애단계별 거주 집중과 서울 인구이동</p>
+</footer>
+
+<div id="loadErr" class="load-err" hidden></div>
+
+<script src="assets/vendor/leaflet/leaflet.js"></script>
+<script src="assets/vendor/plotly/plotly-cartesian.min.js"></script>
+<script src="assets/vendor/katex/katex.min.js"></script>
+<script src="assets/vendor/katex/auto-render.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

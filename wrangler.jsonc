@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lifestage-capital-toronto",
+  "compatibility_date": "2026-10-30",
+  // site/ 폴더만 정적 파일로 올린다 (분석 코드는 저장소에만 있고 웹에는 나가지 않음)
+  "assets": {
+    "directory": "./site"
+  }
+}
